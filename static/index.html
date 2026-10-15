@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nexus Media Downloader</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090d18;color:#fff;font-family:Arial,sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px}
+main{width:100%;max-width:650px;background:#172139;border:1px solid #35415c;border-radius:22px;padding:25px}
+h1{text-align:center;color:#a99fff}
+p{text-align:center;color:#b5bfd3;line-height:1.6}
+input{width:100%;padding:16px;border-radius:12px;border:1px solid #596581;background:#0a1120;color:white;font-size:15px}
+button{width:100%;padding:15px;margin-top:12px;border:0;border-radius:12px;background:#7564f5;color:white;font-size:17px;font-weight:bold}
+#status{margin-top:15px;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<main>
+<h1>⬇ NEXUS MEDIA</h1>
+<h2 style="text-align:center">Media Downloader</h2>
+<p>Paste your direct audio or video file link below.</p>
+<form id="form">
+<input id="url" type="url" placeholder="https://example.com/video.mp4" required>
+<button id="btn">Download</button>
+</form>
+<p id="status"></p>
+<p style="font-size:12px">Only download media you own or have permission to save. YouTube and Instagram share links are not supported.</p>
+</main>
+<script>
+document.getElementById('form').addEventListener('submit',async function(e){
+e.preventDefault();
+const btn=document.getElementById('btn');
+const status=document.getElementById('status');
+btn.disabled=true;
+btn.textContent='Downloading...';
+status.textContent='';
+try{
+const response=await fetch('/api/download',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({url:document.getElementById('url').value})
+});
+if(!response.ok){
+const data=await response.json();
+throw new Error(data.detail||'Download failed');
+}
+const blob=await response.blob();
+const link=document.createElement('a');
+const objectUrl=URL.createObjectURL(blob);
+link.href=objectUrl;
+link.download='nexus_download';
+link.click();
+URL.revokeObjectURL(objectUrl);
+status.textContent='Download started!';
+}catch(error){
+status.textContent=error.message;
+}finally{
+btn.disabled=false;
+btn.textContent='Download';
+}
+});
+</script>
+</body>
+</html>
